@@ -1,3 +1,4 @@
+Idea: In sign in page, apart from next sign in, show a transition zoom in zoom out type video that showcases app in action, like booking.
 # User Flow:
 # Local or Session Storage
 - Save user preferences (like favorite rooms, probably by clicking a favorite icon) (room page)
