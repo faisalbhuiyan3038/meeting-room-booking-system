@@ -1,33 +1,37 @@
+import Navigation from "../../ui/navigation";
+import { Button } from "../../ui/button";
 import {
   Navbar as NavbarComponent,
   NavbarLeft,
   NavbarRight,
-} from "@/components/ui/navbar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+} from "../../ui/navbar";
+import { Sheet, SheetContent, SheetTrigger } from "../../ui/sheet";
 import { Menu } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import LaunchUI from "../../logos/launch-ui";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
-      <div className="relative mx-auto max-w-container px-4">
+    <header className="sticky top-0 z-50 -mb-4 px-4 pb-4">
+      <div className="fade-bottom absolute left-0 h-24 w-full bg-background/15 backdrop-blur-lg"></div>
+      <div className="relative mx-auto max-w-container">
         <NavbarComponent>
           <NavbarLeft>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="/rooms-list" className="text-muted-foreground hover:text-foreground">
-                Browse Meeting Rooms
-              </a>
-              <a href="/my-favorites" className="text-muted-foreground hover:text-foreground">
-                My Favorites
-              </a>
-              <a href="/my-bookings" className="text-muted-foreground hover:text-foreground">
-                My Bookings
-              </a>
-            </nav>
+            <a
+              href="/"
+              className="flex items-center gap-2 text-xl font-bold"
+            >
+              <LaunchUI />
+              Launch UI
+            </a>
+            <Navigation />
           </NavbarLeft>
           <NavbarRight>
-            <UserButton />
+            <a href="/" className="hidden text-sm md:block">
+              Sign in
+            </a>
+            <Button variant="default" asChild>
+              <a href="/">Get Started</a>
+            </Button>
             <Sheet>
               <SheetTrigger asChild>
                 <Button
@@ -42,22 +46,28 @@ export default function Navbar() {
               <SheetContent side="right">
                 <nav className="grid gap-6 text-lg font-medium">
                   <a
-                    href="/rooms"
-                    className="text-muted-foreground hover:text-foreground"
+                    href="/"
+                    className="flex items-center gap-2 text-xl font-bold"
                   >
-                    Browse Meeting Rooms
+                    <span>Launch UI</span>
                   </a>
                   <a
-                    href="/favorites"
+                    href="/"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    My Favorites
+                    Getting Started
                   </a>
                   <a
-                    href="/bookings"
+                    href="/"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    My Bookings
+                    Components
+                  </a>
+                  <a
+                    href="/"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Documentation
                   </a>
                 </nav>
               </SheetContent>

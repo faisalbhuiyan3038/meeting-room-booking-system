@@ -1,5 +1,6 @@
-import { ClerkProvider, SignedIn } from "@clerk/nextjs";
-import Navbar from "./components/Layout/Navbar";
+import { ClerkProvider, UserButton } from "@clerk/nextjs";
+import { SidebarProvider, SidebarTrigger } from "../components/ui/sidebar";
+import { AppSidebar } from "../components/Layout/Navbar";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
@@ -28,17 +29,19 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <SignedIn>
-            <Navbar />
-          </SignedIn>
-          {children}
-        </body>
+      <SidebarProvider>
+        <AppSidebar />
+        <html lang="en">
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+            <SidebarTrigger />
+            <UserButton />
+            {children}
+          </body>
 
-      </html>
+        </html>
+      </SidebarProvider>
     </ClerkProvider>
   );
 }
