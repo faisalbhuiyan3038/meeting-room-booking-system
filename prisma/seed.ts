@@ -2,10 +2,14 @@
 import { PrismaClient, UserRole, RoomStatus, BookingStatus } from '@prisma/client'
 const prisma = new PrismaClient()
 
-// IMPORTANT: Replace this with your actual Clerk user ID after signing up
+// ⚠️ IMPORTANT: First sign up through the app, then replace this with your Clerk user ID
 const YOUR_CLERK_USER_ID = 'user_REPLACE_THIS_WITH_YOUR_CLERK_ID'
 
 async function main() {
+  if (YOUR_CLERK_USER_ID === 'user_REPLACE_THIS_WITH_YOUR_CLERK_ID') {
+    throw new Error('Please replace YOUR_CLERK_USER_ID with your actual Clerk user ID first!')
+  }
+
   console.log('Starting seed...')
 
   // Clean the database
@@ -19,33 +23,60 @@ async function main() {
   console.log('Creating user...')
   const user = await prisma.user.create({
     data: {
-      id: YOUR_CLERK_USER_ID,  // ⚠️ Replace with your Clerk user ID
+      id: YOUR_CLERK_USER_ID,
       email: 'your.email@example.com', // Replace with your email
       firstName: 'Your',
       lastName: 'Name',
-      role: UserRole.ADMIN, // Making you an admin so you can access everything
+      role: UserRole.ADMIN,
     },
   })
 
-  // Create some rooms
+  // Create five rooms
   console.log('Creating rooms...')
   const rooms = await Promise.all([
     prisma.room.create({
       data: {
-        name: 'Conference Room A',
-        capacity: 20,
-        amenities: ["PROJECTOR", "WHITEBOARD", "VIDEO_CONF"],
+        name: 'Executive Boardroom',
+        capacity: 30,
+        amenities: ["PROJECTOR", "WHITEBOARD", "VIDEO_CONF", "TV_SCREEN", "COFFEE_MACHINE"],
         status: RoomStatus.ACTIVE,
-        description: 'Large conference room with full AV setup',
+        description: 'Premium boardroom with state-of-the-art facilities',
       },
     }),
     prisma.room.create({
       data: {
-        name: 'Meeting Room B',
-        capacity: 8,
+        name: 'Team Collaboration Space',
+        capacity: 15,
+        amenities: ["WHITEBOARD", "TV_SCREEN", "VIDEO_CONF"],
+        status: RoomStatus.ACTIVE,
+        description: 'Open space perfect for team brainstorming sessions',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Focus Room',
+        capacity: 4,
         amenities: ["WHITEBOARD", "TV_SCREEN"],
         status: RoomStatus.ACTIVE,
-        description: 'Medium-sized meeting room for team discussions',
+        description: 'Small room ideal for focused discussions',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Training Room',
+        capacity: 25,
+        amenities: ["PROJECTOR", "WHITEBOARD", "VIDEO_CONF", "TV_SCREEN"],
+        status: RoomStatus.ACTIVE,
+        description: 'Spacious room equipped for training sessions and workshops',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Creative Studio',
+        capacity: 10,
+        amenities: ["WHITEBOARD", "TV_SCREEN", "VIDEO_CONF"],
+        status: RoomStatus.ACTIVE,
+        description: 'Modern space designed for creative meetings and design thinking',
       },
     }),
   ])
