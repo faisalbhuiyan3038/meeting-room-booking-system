@@ -32,7 +32,7 @@ const RoomCard = ({
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-48 w-full">
         <Image
-          src={imageUrl || "/placeholder-room.jpg"}
+          src={imageUrl || "/rooms/placeholder-room.jpg"}
           alt={name}
           fill
           className="object-cover"
