@@ -3,7 +3,7 @@ import { PrismaClient, UserRole, RoomStatus, BookingStatus } from '@prisma/clien
 const prisma = new PrismaClient()
 
 // ⚠️ IMPORTANT: First sign up through the app, then replace this with your Clerk user ID
-const YOUR_CLERK_USER_ID = 'user_REPLACE_THIS_WITH_YOUR_CLERK_ID'
+const YOUR_CLERK_USER_ID: string = 'user_2tCUCKsyQnHgaGMGO7er3sipNG6';
 
 async function main() {
   if (YOUR_CLERK_USER_ID === 'user_REPLACE_THIS_WITH_YOUR_CLERK_ID') {
@@ -12,23 +12,18 @@ async function main() {
 
   console.log('Starting seed...')
 
-  // Clean the database
+  // Clean the database (preserving users)
   console.log('Cleaning database...')
   await prisma.booking.deleteMany()
   await prisma.userFavorite.deleteMany()
   await prisma.room.deleteMany()
-  await prisma.user.deleteMany()
+  // await prisma.user.deleteMany() // Commented out to preserve existing users
 
-  // Create your user (using your real Clerk ID)
-  console.log('Creating user...')
-  const user = await prisma.user.create({
-    data: {
-      id: YOUR_CLERK_USER_ID,
-      email: 'your.email@example.com', // Replace with your email
-      firstName: 'Your',
-      lastName: 'Name',
-      role: UserRole.ADMIN,
-    },
+  // Update your user to admin role
+  console.log('Updating user role to admin...')
+  const user = await prisma.user.update({
+    where: { id: YOUR_CLERK_USER_ID },
+    data: { role: UserRole.ADMIN },
   })
 
   // Create five rooms

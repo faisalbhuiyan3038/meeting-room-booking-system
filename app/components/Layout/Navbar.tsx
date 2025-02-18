@@ -10,10 +10,10 @@ import { UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
+    <header className="sticky top-0 z-50 w-full bg-background border-b shadow-sm">
       <div className="relative mx-auto max-w-container px-4">
-        <NavbarComponent>
-          <NavbarLeft>
+        <NavbarComponent className="justify-between">
+          <NavbarLeft className="flex-1 justify-center">
             <nav className="hidden md:flex items-center gap-6">
               <a href="/rooms-list" className="text-muted-foreground hover:text-foreground">
                 Browse Meeting Rooms
@@ -26,8 +26,8 @@ export default function Navbar() {
               </a>
             </nav>
           </NavbarLeft>
-          <NavbarRight>
-            <UserButton />
+          <NavbarRight className="flex items-center gap-4">
+            <UserButton afterSignOutUrl="/" />
             <Sheet>
               <SheetTrigger asChild>
                 <Button
