@@ -37,6 +37,7 @@ export default async function MyFavorites() {
         {favorites.map(({ room }) => (
           <RoomCard
             key={room.id}
+            id={room.id}
             name={room.name}
             imageUrl={room.imageUrl}
             capacity={room.capacity}

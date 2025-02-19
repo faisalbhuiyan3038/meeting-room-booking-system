@@ -1,17 +1,24 @@
+"use client";
+
 import { Amenity, amenityIcons } from "../config/amenities";
 import { RoomStatus } from "@prisma/client";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Users } from "lucide-react";
+import { Users, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface RoomCardProps {
+  id: string;
   name: string;
   imageUrl: string | null;
   capacity: number;
   status: RoomStatus;
   description: string | null;
   amenities: Amenity[];
+  isFavorite?: boolean;
+  onToggleFavorite?: (roomId: string) => void;
 }
 
 const statusColors = {
@@ -21,15 +28,24 @@ const statusColors = {
 };
 
 const RoomCard = ({
+  id,
   name,
   imageUrl,
   capacity,
   status,
   description,
   amenities,
+  isFavorite = false,
+  onToggleFavorite,
 }: RoomCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card
+      className="overflow-hidden hover:shadow-lg transition-shadow"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="relative h-48 w-full">
         <Image
           src={imageUrl || "/rooms/placeholder-room.jpg"}
@@ -37,6 +53,22 @@ const RoomCard = ({
           fill
           className="object-cover"
         />
+        {onToggleFavorite && (
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleFavorite(id);
+            }}
+            className={`absolute top-2 right-2 p-2 rounded-full transition-opacity ${isHovered || isFavorite ? 'opacity-100' : 'opacity-0'
+              } bg-white/80 hover:bg-white`}
+            size="icon"
+            variant="ghost"
+          >
+            <Heart
+              className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+            />
+          </Button>
+        )}
       </div>
 
       <CardHeader className="p-4">

@@ -11,8 +11,9 @@ import ReactSelect, { MultiValue } from "react-select";
 import { amenityOptions, Amenity } from "../config/amenities";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
-import { Room } from "@prisma/client";
+import { Room, UserFavorite } from "@prisma/client";
 import RoomCard from "../room-card/room-card";
+import { useAuth } from "@clerk/nextjs";
 
 // Ensure the Option type matches the structure of amenityOptions
 type AmenityOption = typeof amenityOptions[number];
@@ -35,12 +36,37 @@ const statusOptions = [
 
 interface RoomFiltersProps {
   allRooms: Room[];
+  userFavorites: UserFavorite[];
 }
 
-export function RoomFilters({ allRooms }: RoomFiltersProps) {
+export function RoomFilters({ allRooms, userFavorites }: RoomFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filteredRooms, setFilteredRooms] = useState(allRooms);
+  const { userId } = useAuth();
+
+  const handleToggleFavorite = async (roomId: string) => {
+    if (!userId) return;
+
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ roomId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle favorite');
+      }
+
+      // Refresh the page to update the favorites
+      router.refresh();
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -153,12 +179,15 @@ export function RoomFilters({ allRooms }: RoomFiltersProps) {
         {filteredRooms.map((room) => (
           <RoomCard
             key={room.id}
+            id={room.id}
             name={room.name}
             imageUrl={room.imageUrl}
             capacity={room.capacity}
             status={room.status}
             description={room.description}
             amenities={room.amenities as Amenity[]}
+            isFavorite={userFavorites.some(fav => fav.roomId === room.id)}
+            onToggleFavorite={handleToggleFavorite}
           />
         ))}
       </div>
