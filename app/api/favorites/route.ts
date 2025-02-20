@@ -2,19 +2,33 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const favorites = await prisma.userFavorite.findMany({
+      where: { userId },
+    });
+    return NextResponse.json(favorites);
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    return NextResponse.json({ error: 'Failed to fetch favorites' }, { status: 500 });
+  }
+}
 
+export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
     const { roomId } = await request.json();
-    if (!roomId) {
-      return new NextResponse("Room ID is required", { status: 400 });
-    }
 
-    // Check if the favorite already exists
+    // Check if favorite already exists
     const existingFavorite = await prisma.userFavorite.findUnique({
       where: {
         userId_roomId: {
@@ -25,25 +39,28 @@ export async function POST(request: Request) {
     });
 
     if (existingFavorite) {
-      // If it exists, remove it
+      // If exists, delete it
       await prisma.userFavorite.delete({
         where: {
-          id: existingFavorite.id,
+          userId_roomId: {
+            userId,
+            roomId,
+          },
         },
       });
+      return NextResponse.json({ action: 'removed' });
     } else {
-      // If it doesn't exist, create it
+      // If doesn't exist, create it
       await prisma.userFavorite.create({
         data: {
           userId,
           roomId,
         },
       });
+      return NextResponse.json({ action: 'added' });
     }
-
-    return new NextResponse("Success", { status: 200 });
   } catch (error) {
-    console.error("Error in favorites API:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error('Error toggling favorite:', error);
+    return NextResponse.json({ error: 'Failed to toggle favorite' }, { status: 500 });
   }
-} 
+}

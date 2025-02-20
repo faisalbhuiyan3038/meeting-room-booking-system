@@ -1,13 +1,14 @@
 "use client";
 
 import { Amenity, amenityIcons } from "../config/amenities";
-import { RoomStatus } from "@prisma/client";
+import { Room, RoomStatus } from "@prisma/client";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Users, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useQueryClient } from "react-query";
 
 interface RoomCardProps {
   id: string;
@@ -19,6 +20,10 @@ interface RoomCardProps {
   amenities: Amenity[];
   isFavorite?: boolean;
   onToggleFavorite?: (roomId: string) => void;
+}
+
+interface RoomWithFavorite extends Room {
+  isFavorite: boolean;
 }
 
 const statusColors = {
@@ -38,7 +43,30 @@ const RoomCard = ({
   isFavorite = false,
   onToggleFavorite,
 }: RoomCardProps) => {
+  const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!onToggleFavorite) return;
+
+    // Optimistic update
+    queryClient.setQueryData<RoomWithFavorite[]>(['rooms'], (oldData) => {
+      if (!oldData) return [];
+      return oldData.map((room) => {
+        if (room.id === id) {
+          return {
+            ...room,
+            isFavorite: !isFavorite
+          };
+        }
+        return room;
+      });
+    });
+
+    // Call the actual toggle function
+    onToggleFavorite(id);
+  };
 
   return (
     <Card
@@ -55,10 +83,7 @@ const RoomCard = ({
         />
         {onToggleFavorite && (
           <Button
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(id);
-            }}
+            onClick={handleFavoriteClick}
             className={`absolute top-2 right-2 p-2 rounded-full transition-opacity ${isHovered || isFavorite ? 'opacity-100' : 'opacity-0'
               } bg-white/80 hover:bg-white`}
             size="icon"
@@ -76,7 +101,7 @@ const RoomCard = ({
           <h3 className="text-lg font-semibold">{name}</h3>
           <Badge
             variant="secondary"
-            className={`${statusColors[status]} text-white`}
+            className={`${statusColors[status]} text-white hover:bg-green-500`}
           >
             {status}
           </Badge>

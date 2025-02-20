@@ -1,5 +1,6 @@
 import { ClerkProvider, SignedIn } from "@clerk/nextjs";
 import Navbar from "./components/Layout/Navbar";
+import Providers from "./providers";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
@@ -32,12 +33,13 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <SignedIn>
-            <Navbar />
-          </SignedIn>
-          {children}
+          <Providers>
+            <SignedIn>
+              <Navbar />
+            </SignedIn>
+            {children}
+          </Providers>
         </body>
-
       </html>
     </ClerkProvider>
   );
