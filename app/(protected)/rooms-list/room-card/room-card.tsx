@@ -9,6 +9,7 @@ import { Users, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
+import { useRouter } from "next/navigation";
 
 interface RoomCardProps {
   id: string;
@@ -44,6 +45,7 @@ const RoomCard = ({
   onToggleFavorite,
 }: RoomCardProps) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
@@ -96,7 +98,10 @@ const RoomCard = ({
         )}
       </div>
 
-      <CardHeader className="p-4">
+      <CardHeader
+        className="p-4 hover:cursor-pointer hover:bg-gray-50"
+        onClick={() => router.push(`/create-booking/${id}`)}
+      >
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">{name}</h3>
           <Badge
