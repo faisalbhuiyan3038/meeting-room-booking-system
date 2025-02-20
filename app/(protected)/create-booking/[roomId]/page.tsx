@@ -9,13 +9,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { DayPicker } from 'react-day-picker';
 import { format, addMinutes, setHours, setMinutes, isSameDay } from 'date-fns';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import 'react-day-picker/dist/style.css';
 
 async function fetchRoom(roomId: string): Promise<Room> {
@@ -39,21 +42,10 @@ function generateTimeSlots() {
   return slots;
 }
 
-interface BookingFormData {
-  title: string;
-  attendees: number;
-  purpose: string;
-}
-
 export default function CreateBooking({ params }: { params: { roomId: string } }) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<Date | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<BookingFormData>({
-    title: '',
-    attendees: 1,
-    purpose: '',
-  });
   const { toast } = useToast();
   const timeSlots = generateTimeSlots();
 
@@ -65,6 +57,31 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
       refetchOnWindowFocus: false,
     }
   );
+
+  const bookingFormSchema = useMemo(() => z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters'),
+    attendees: z.number()
+      .min(1, 'Must have at least 1 attendee')
+      .refine(
+        (val) => {
+          if (!room?.capacity) return false;
+          return val <= room.capacity;
+        },
+        () => ({ message: `Number of attendees cannot exceed room capacity of ${room?.capacity || 0}` })
+      ),
+    purpose: z.string().min(10, 'Purpose must be at least 10 characters'),
+  }), [room?.capacity]);
+
+  type BookingFormData = z.infer<typeof bookingFormSchema>;
+
+  const form = useForm<BookingFormData>({
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      title: '',
+      attendees: 1,
+      purpose: '',
+    },
+  });
 
   const handleTimeSelect = async (time: Date) => {
     const bookingDateTime = new Date(selectedDate);
@@ -96,6 +113,7 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
       setSelectedTime(time);
       setShowForm(true);
     } catch (error) {
+      console.error('Error checking availability:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -104,14 +122,60 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Submit booking to API
-    console.log('Form submitted:', {
-      ...formData,
-      startTime: selectedTime,
-      roomId: params.roomId,
-    });
+  const handleFormSubmit = async (data: BookingFormData) => {
+    if (!selectedTime) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a time slot first.",
+      });
+      return;
+    }
+
+    try {
+      const bookingDateTime = new Date(selectedDate);
+      bookingDateTime.setHours(selectedTime.getHours());
+      bookingDateTime.setMinutes(selectedTime.getMinutes());
+
+      // Calculate end time (30 minutes after start time)
+      const endDateTime = new Date(bookingDateTime);
+      endDateTime.setMinutes(endDateTime.getMinutes() + 30);
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          startTime: bookingDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          roomId: params.roomId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to create booking');
+      }
+
+      toast({
+        title: "Success",
+        description: "Booking created successfully.",
+      });
+
+      // Reset form and state
+      form.reset();
+      setSelectedTime(null);
+      setShowForm(false);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create booking. Please try again.",
+      });
+    }
   };
 
   if (isLoading) {
@@ -153,20 +217,20 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
           <div className="flex items-center gap-4">
             <div className="relative h-20 w-32 flex-shrink-0">
               <Image
-                src={room.imageUrl || "/rooms/placeholder-room.jpg"}
-                alt={room.name}
+                src={room?.imageUrl || "/rooms/placeholder-room.jpg"}
+                alt={room?.name || 'Room'}
                 fill
                 className="object-cover rounded-lg"
               />
             </div>
             <Separator orientation="vertical" className="h-8 mx-4 hidden sm:block" />
-            <h1 className="text-xl font-semibold">{room.name}</h1>
+            <h1 className="text-xl font-semibold">{room?.name}</h1>
           </div>
           <div className="flex items-center gap-4">
             <Separator orientation="vertical" className="h-8 mx-4 hidden sm:block" />
             <div className="flex items-center gap-2 text-gray-600">
               <Users className="h-5 w-5" />
-              <span>Capacity: {room.capacity} people</span>
+              <span>Capacity: {room?.capacity} people</span>
             </div>
           </div>
         </div>
@@ -215,15 +279,17 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
         </div>
       ) : (
         <Card className="p-6">
-          <form onSubmit={handleFormSubmit} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Meeting Title</Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
+                {...form.register('title')}
+                aria-invalid={!!form.formState.errors.title}
               />
+              {form.formState.errors.title && (
+                <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -233,20 +299,24 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
                 type="number"
                 min={1}
                 max={room?.capacity || 1}
-                value={formData.attendees}
-                onChange={(e) => setFormData({ ...formData, attendees: parseInt(e.target.value) })}
-                required
+                {...form.register('attendees', { valueAsNumber: true })}
+                aria-invalid={!!form.formState.errors.attendees}
               />
+              {form.formState.errors.attendees && (
+                <p className="text-sm text-red-500">{form.formState.errors.attendees.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="purpose">Meeting Purpose</Label>
               <Textarea
                 id="purpose"
-                value={formData.purpose}
-                onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                required
+                {...form.register('purpose')}
+                aria-invalid={!!form.formState.errors.purpose}
               />
+              {form.formState.errors.purpose && (
+                <p className="text-sm text-red-500">{form.formState.errors.purpose.message}</p>
+              )}
             </div>
 
             <div className="flex gap-4 justify-end">
@@ -256,12 +326,16 @@ export default function CreateBooking({ params }: { params: { roomId: string } }
                 onClick={() => {
                   setShowForm(false);
                   setSelectedTime(null);
+                  form.reset();
                 }}
               >
                 Back
               </Button>
-              <Button type="submit">
-                Create Booking
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? 'Creating...' : 'Create Booking'}
               </Button>
             </div>
           </form>
