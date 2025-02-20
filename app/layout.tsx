@@ -1,6 +1,7 @@
 import { ClerkProvider, SignedIn } from "@clerk/nextjs";
 import Navbar from "./components/Layout/Navbar";
 import Providers from "./providers";
+import { Toaster } from "@/components/ui/toaster";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
@@ -24,9 +25,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <ClerkProvider>
       <html lang="en">
@@ -38,6 +39,7 @@ export default function RootLayout({
               <Navbar />
             </SignedIn>
             {children}
+            <Toaster />
           </Providers>
         </body>
       </html>

@@ -52,6 +52,7 @@ Idea: In sign in page, apart from next sign in, show a transition zoom in zoom o
 
 - Login normally, cannot sign up as admin.
 - Do CRUD operations on all bookings and rooms (regardless of user) (admin page?)
+- Create more admin users (admin page)
 - Log out
 
 
