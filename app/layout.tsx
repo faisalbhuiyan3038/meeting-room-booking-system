@@ -1,26 +1,12 @@
-import { ClerkProvider, SignedIn } from "@clerk/nextjs";
-import Navbar from "./components/Layout/Navbar";
-import Providers from "./providers";
-import { Toaster } from "@/components/ui/toaster";
+import { ClerkProvider } from '@clerk/nextjs';
+import { Toaster } from 'react-hot-toast';
+import Providers from './providers';
+import Navbar from './components/Layout/Navbar';
+import './globals.css';
 
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata: Metadata = {
-  title: "Meeting Room Booking",
-  description: "Created by Faisal Bhuiyan",
+export const metadata = {
+  title: 'Room Booking System',
+  description: 'A modern room booking system for managing meeting spaces',
 };
 
 export default function RootLayout({
@@ -30,19 +16,17 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <Providers>
-            <SignedIn>
-              <Navbar />
-            </SignedIn>
-            {children}
+      <Providers>
+        <html lang="en">
+          <body>
+            <Navbar />
+            <main className="">
+              {children}
+            </main>
             <Toaster />
-          </Providers>
-        </body>
-      </html>
+          </body>
+        </html>
+      </Providers>
     </ClerkProvider>
   );
 }
