@@ -99,3 +99,36 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        room: true,
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+    });
+
+    return NextResponse.json(bookings);
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    return NextResponse.json(
+      { message: 'Failed to fetch bookings' },
+      { status: 500 }
+    );
+  }
+}
