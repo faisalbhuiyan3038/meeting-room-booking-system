@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { RoomFilters } from "./components/room-filters";
 import { Room, UserFavorite } from "@prisma/client";
+import { PageLoadingSpinner } from "@/app/components/loading-spinner";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
@@ -93,9 +94,7 @@ export default function RoomsList() {
 
   if (isLoadingRooms || (isSignedIn && isLoadingFavorites)) {
     return (
-      <div className="container mx-auto p-6">
-        <div>Loading...</div>
-      </div>
+      <PageLoadingSpinner />
     );
   }
 

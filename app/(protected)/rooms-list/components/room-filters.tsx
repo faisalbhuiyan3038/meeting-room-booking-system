@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
 import { Room, UserFavorite } from "@prisma/client";
 import RoomCard from "../room-card/room-card";
+import { LoadingSpinner } from "@/app/components/loading-spinner";
 
 // Ensure the Option type matches the structure of amenityOptions
 type AmenityOption = typeof amenityOptions[number];
@@ -101,6 +102,14 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
 
     setFilteredRooms(result);
   }, [searchParams, allRooms]);
+
+  if (!allRooms) {
+    return (
+      <div className="container mx-auto p-6 min-h-[50vh] flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <>
