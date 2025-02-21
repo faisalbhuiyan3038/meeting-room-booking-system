@@ -1,6 +1,7 @@
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkLoaded, ClerkLoading, ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'react-hot-toast';
 import Providers from './providers';
+import { PageLoadingSpinner } from './components/loading-spinner';
 import Navbar from './components/Layout/Navbar';
 import './globals.css';
 
@@ -21,7 +22,10 @@ export default function RootLayout({
           <body>
             <Navbar />
             <main className="">
-              {children}
+              <ClerkLoading>
+                <PageLoadingSpinner />
+              </ClerkLoading>
+              <ClerkLoaded>{children}</ClerkLoaded>
             </main>
             <Toaster />
           </body>

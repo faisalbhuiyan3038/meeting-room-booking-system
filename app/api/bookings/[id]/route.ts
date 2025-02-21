@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { BookingStatus } from '@prisma/client';
 
 const updateBookingSchema = z.object({
-  status: z.enum(['CANCELLED']).optional(),
-  title: z.string().min(3).optional(),
+  status: z.nativeEnum(BookingStatus).optional(),
+  startTime: z.coerce.date().optional(),
+  endTime: z.coerce.date().optional(),
   purpose: z.string().min(10).optional(),
+  roomId: z.string().optional(),
 });
 
 export async function GET(
