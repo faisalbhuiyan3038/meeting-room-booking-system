@@ -19,6 +19,7 @@ interface RoomFormData {
   description?: string;
   status: RoomStatus;
   amenities: string[];
+  imageUrl?: string;
 }
 
 interface BookingFormData {
@@ -114,6 +115,7 @@ export default function AdminDashboard() {
     description: '',
     status: 'ACTIVE',
     amenities: [],
+    imageUrl: undefined,
   });
   const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
     startTime: new Date(),
@@ -122,6 +124,8 @@ export default function AdminDashboard() {
     roomId: '',
     status: 'CONFIRMED',
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { data: rooms = [], isLoading: isLoadingRooms } = useQuery<Room[]>(['admin-rooms'], fetchRooms, {
     enabled: currentSection === 'rooms' || currentSection === 'bookings',
@@ -145,6 +149,7 @@ export default function AdminDashboard() {
         description: '',
         status: 'ACTIVE',
         amenities: [],
+        imageUrl: undefined,
       });
       toast.success('Room created successfully');
     },
@@ -201,6 +206,38 @@ export default function AdminDashboard() {
     },
   });
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, imageUrl: data.url }));
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setUploadError('Failed to upload image. Please try again.');
+      toast.error('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (isLoaded && !isSignedIn) {
     router.push("/sign-in");
     return null;
@@ -227,6 +264,20 @@ export default function AdminDashboard() {
       description: room.description || '',
       status: room.status,
       amenities: room.amenities as string[],
+      imageUrl: room.imageUrl || undefined,
+    });
+  };
+
+  const handleCancel = () => {
+    setIsEditing(null);
+    setIsCreating(false);
+    setFormData({
+      name: '',
+      capacity: 0,
+      description: '',
+      status: 'ACTIVE',
+      amenities: [],
+      imageUrl: undefined,
     });
   };
 
@@ -301,6 +352,32 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700">Image</label>
+                <div className="mt-1 flex items-center space-x-4">
+                  {formData.imageUrl && (
+                    <img
+                      src={formData.imageUrl}
+                      alt="Room preview"
+                      className="h-20 w-20 object-cover rounded"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100"
+                    disabled={isUploading}
+                  />
+                </div>
+                {isUploading && <p className="mt-2 text-sm text-gray-500">Uploading...</p>}
+                {uploadError && <p className="mt-2 text-sm text-red-600">{uploadError}</p>}
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700">Capacity</label>
                 <input
                   type="number"
@@ -349,10 +426,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsEditing(null);
-                    setIsCreating(false);
-                  }}
+                  onClick={handleCancel}
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
                 >
                   Cancel
@@ -365,38 +439,49 @@ export default function AdminDashboard() {
         <div className="grid gap-4">
           {rooms.map((room) => (
             <div key={room.id} className="bg-white rounded-lg shadow p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">{room.name}</h2>
-                <div className="flex space-x-2">
-                  <span className={`px-2 py-1 rounded text-sm ${room.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                    room.status === 'MAINTENANCE' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                    {room.status}
-                  </span>
-                  <button
-                    onClick={() => handleEdit(room)}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(room.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Delete
-                  </button>
+              <div className="flex items-start space-x-4">
+                {room.imageUrl && (
+                  <img
+                    src={room.imageUrl}
+                    alt={room.name}
+                    className="h-24 w-24 object-cover rounded"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">{room.name}</h2>
+                    <div className="flex space-x-2">
+                      <span className={`px-2 py-1 rounded text-sm ${room.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                        room.status === 'MAINTENANCE' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                        {room.status}
+                      </span>
+                      <button
+                        onClick={() => handleEdit(room)}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(room.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-gray-600">Capacity: {room.capacity} people</p>
+                  <p className="text-sm text-gray-500 mt-2">{room.description}</p>
+                  {room.amenities && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600">
+                        Amenities: {(room.amenities as string[]).join(', ')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
-              <p className="text-gray-600">Capacity: {room.capacity} people</p>
-              <p className="text-sm text-gray-500 mt-2">{room.description}</p>
-              {room.amenities && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600">
-                    Amenities: {(room.amenities as string[]).join(', ')}
-                  </p>
-                </div>
-              )}
             </div>
           ))}
         </div>

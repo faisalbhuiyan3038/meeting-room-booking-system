@@ -9,6 +9,7 @@ const roomUpdateSchema = z.object({
   description: z.string().optional(),
   status: z.enum(['ACTIVE', 'MAINTENANCE', 'INACTIVE']).optional(),
   amenities: z.array(z.string()).optional(),
+  imageUrl: z.string().url().optional(),
 });
 
 // Middleware to check if user is admin

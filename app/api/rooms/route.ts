@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-const roomSchema = z.object({
+const roomCreateSchema = z.object({
   name: z.string().min(3),
   capacity: z.number().min(1),
   description: z.string().optional(),
-  status: z.enum(['ACTIVE', 'MAINTENANCE', 'INACTIVE']),
+  status: z.enum(['ACTIVE', 'MAINTENANCE', 'INACTIVE']).default('ACTIVE'),
   amenities: z.array(z.string()),
+  imageUrl: z.string().url().optional(),
 });
 
 // Middleware to check if user is admin
@@ -28,7 +29,7 @@ export async function GET() {
   try {
     const rooms = await prisma.room.findMany({
       orderBy: {
-        name: 'asc',
+        createdAt: 'desc',
       },
     });
     return NextResponse.json(rooms);
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = roomSchema.parse(body);
+    const validatedData = roomCreateSchema.parse(body);
 
     const room = await prisma.room.create({
       data: validatedData,
