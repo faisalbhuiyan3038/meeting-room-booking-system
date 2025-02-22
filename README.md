@@ -20,6 +20,30 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Filter Meeting Room List by Capacity, Room Status and one or more amenities.
 - Ability to favorite/unfavorite Meeting rooms by clicking on heart icon after hovering on image.
 - Ability to see all Favorited Rooms in one page.
+- Ability to see recently viewed rooms in one page.
 - Ability to choose day from calendar view and time slot for Booking
 - Checks to ensure selected slot is free/unoccupied.
+- Perform CRUD operations on Rooms and Bookings.
+- Upload image for new rooms to Cloudinary.
+- Ability to edit/cancel current user's booking.
+
+## Technical Jargons
+- Used Next.js 14 with App Router instead of the latest Next.js 15.
+- Used AivenDB free tier for database with Prisma as ORM.
+- Used Clerk for managing users.
+- Used React Query for data fetching and caching.
+- Used Cloudinary for image storage.
+- Saved recently viewed rooms in local storage.
+- Save favourite rooms in Database.
+- Used TailwindCSS for styling.
+- Used Zod for form validation.
+- Used Shadcn UI for components.
+- Used lucide icons for icons.
+
+## Features left to implement
+- Pagination for rooms list.
+- Concurrent booking conflict handling. (If two users try to book same room at same time, show error, or find a way to handle it)
+- Update seed data with more rooms for pagination and create admin user to clerk with it.
+- Set up .env.example file.
+- Fix up Getting Started section.
 
