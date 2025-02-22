@@ -1,5 +1,5 @@
 import { ClerkLoaded, ClerkLoading, ClerkProvider } from '@clerk/nextjs';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from '@/components/ui/toaster';
 import Providers from './providers';
 import { PageLoadingSpinner } from './components/loading-spinner';
 import Navbar from './components/Layout/Navbar';

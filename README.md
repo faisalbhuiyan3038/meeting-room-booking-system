@@ -4,12 +4,41 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-- Follow `.env.example` and create your own env file with proper variables.
-- Run first migration `npx prisma migrate dev --name init`
-- Generate prisma client with `npx prisma generate`
-- Migrate seed data with `npx prisma db seed`
-- The default user has admin role in seed data with email `admin@admin.com` and password `admin`.
-- Run the development server with `npm run dev`
+- Clone the repo first.
+```bash
+git clone https://github.com/faisalbhuiyan3038/meeting-room-booking-system.git
+```
+- Install dependencies
+```bash
+npm install
+```
+- Follow `.env.example` and create a .env file with variables. (This is needed for seed data and app to work!)
+- After environment variables are set up, run first migration.
+```bash
+npx prisma migrate dev --name init
+```
+- Generate prisma client.
+```bash
+npx prisma generate
+```
+- Push database.
+```bash
+npx prisma db push
+```
+- Migrate seed data to create rooms, bookings, favorites and users if you don't want to start from scratch.
+```bash
+npx prisma db seed
+```
+- Run the development server.
+```bash
+npm run dev
+```
+
+## Important Notes
+- The seed data creates 10 rooms, 1 booking, 1 favorite and 2 users.
+- The Admin user has admin role in seed data with email `admin@admin.com` and password `Password123`.
+- The Regular user has regular role in seed data with email `user@user.com` and password `Password123`.
+- I disabled compromised password and strength detection since for testing purposes, I wanted to use weak passwords.
 - Login and enjoy!
 
 
@@ -27,6 +56,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Upload image for new rooms to Cloudinary.
 - Ability to edit/cancel current user's booking.
 - Prevent double booking by immediately checking if selected slot is free/unoccupied.
+- Show messages in console for seed data operations for visual feedback.
 
 ## Technical Jargons
 - Used Next.js 14 with App Router instead of the latest Next.js 15.
@@ -41,7 +71,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Used Shadcn UI for components.
 - Used lucide icons for icons.
 
-## Features left to implement
-- Update seed data with more rooms for pagination and create admin user to clerk with it.
-- Fix up Getting Started section.
+## Screenshots/Demo
 
+### Room List and Filtering
+![Room List](screenshots/Room_List.png)
+
+### Room Booking Process
+![Create Booking Page](screenshots/Create_Booking_Page.png)
+![Create Booking Form](screenshots/Create_Booking_Form.png)
+
+### User Features
+![My Bookings](screenshots/My_Bookings.png)
+![Edit Booking](screenshots/Edit_Booking.png)
+![Favourites Page](screenshots/Favourites_Page.png)
+![Recently Viewed Page](screenshots/Recently_Viewed_Page.png)
+
+### Admin Dashboard and Management
+![Admin Dashboard](screenshots/Admin_Dashboard.png)
+![Admin Room Management](screenshots/Admin_Room_Management.png)
+![Admin Booking Management](screenshots/Admin_Booking_Management.png)

@@ -1,6 +1,8 @@
-// prisma/seed.ts
+
 import { PrismaClient, UserRole, RoomStatus, BookingStatus } from '@prisma/client'
 import { clerkClient } from '@clerk/nextjs/server'
+
+
 const prisma = new PrismaClient()
 
 async function main() {
@@ -17,14 +19,14 @@ async function main() {
   console.log('Creating users in Clerk...')
   const clerk = await clerkClient()
   const adminClerk = await clerk.users.createUser({
-    emailAddress: ['admin@example.com'],
+    emailAddress: ['admin@admin.com'],
     password: 'Password123',
     firstName: 'Admin',
     lastName: 'User'
   })
 
   const regularClerk = await clerk.users.createUser({
-    emailAddress: ['user@example.com'],
+    emailAddress: ['user@user.com'],
     password: 'Password123',
     firstName: 'Regular',
     lastName: 'User'
@@ -35,7 +37,7 @@ async function main() {
   const adminUser = await prisma.user.create({
     data: {
       id: adminClerk.id,
-      email: 'admin@example.com',
+      email: 'admin@admin.com',
       firstName: 'Admin',
       lastName: 'User',
       role: UserRole.ADMIN,
@@ -45,7 +47,7 @@ async function main() {
   const regularUser = await prisma.user.create({
     data: {
       id: regularClerk.id,
-      email: 'user@example.com',
+      email: 'user@user.com',
       firstName: 'Regular',
       lastName: 'User',
       role: UserRole.USER,
