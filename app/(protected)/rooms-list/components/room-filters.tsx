@@ -14,6 +14,8 @@ import { useCallback, useState, useEffect } from "react";
 import { Room, UserFavorite } from "@prisma/client";
 import RoomCard from "../room-card/room-card";
 import { LoadingSpinner } from "@/app/components/loading-spinner";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Ensure the Option type matches the structure of amenityOptions
 type AmenityOption = typeof amenityOptions[number];
@@ -44,6 +46,8 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filteredRooms, setFilteredRooms] = useState(allRooms);
+  const [currentPage, setCurrentPage] = useState(1);
+  const roomsPerPage = 5;
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -103,6 +107,29 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
     setFilteredRooms(result);
   }, [searchParams, allRooms]);
 
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredRooms.length / roomsPerPage);
+  const startIndex = (currentPage - 1) * roomsPerPage;
+  const endIndex = startIndex + roomsPerPage;
+  const currentRooms = filteredRooms.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchParams]);
+
   if (!allRooms) {
     return (
       <div className="container mx-auto p-6 min-h-[50vh] flex items-center justify-center">
@@ -156,12 +183,12 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
         />
 
         <div className="text-sm text-muted-foreground">
-          Showing {filteredRooms.length} of {allRooms.length} rooms
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredRooms.length)} of {filteredRooms.length} rooms
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRooms.map((room) => (
+        {currentRooms.map((room) => (
           <RoomCard
             key={room.id}
             id={room.id}
@@ -175,6 +202,29 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
             onToggleFavorite={onToggleFavorite}
           />
         ))}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="mt-6 flex items-center justify-center gap-4">
+        <Button
+          variant="outline"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="h-4 w-4" /> Previous
+        </Button>
+        <span className="text-sm">
+          Page {currentPage} of {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+          className="flex items-center gap-2"
+        >
+          Next <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
     </>
   );
