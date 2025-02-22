@@ -26,6 +26,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Perform CRUD operations on Rooms and Bookings.
 - Upload image for new rooms to Cloudinary.
 - Ability to edit/cancel current user's booking.
+- Prevent double booking by immediately checking if selected slot is free/unoccupied.
 
 ## Technical Jargons
 - Used Next.js 14 with App Router instead of the latest Next.js 15.
@@ -41,9 +42,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Used lucide icons for icons.
 
 ## Features left to implement
-- Pagination for rooms list.
-- Concurrent booking conflict handling. (If two users try to book same room at same time, show error, or find a way to handle it)
 - Update seed data with more rooms for pagination and create admin user to clerk with it.
-- Set up .env.example file.
 - Fix up Getting Started section.
 

@@ -17,7 +17,7 @@ export function addRecentlyViewedRoom(room: Pick<Room, 'id' | 'name' | 'imageUrl
     // Remove if already exists
     const filteredRooms = recentRooms.filter(r => r.id !== room.id);
 
-    // Add to beginning of array with current timestamp
+    // using spread operator to add to beginning of array
     const updatedRooms = [
       { ...room, viewedAt: Date.now() },
       ...filteredRooms

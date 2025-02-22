@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create the booking
+    // Create a booking
     const booking = await prisma.booking.create({
       data: {
         ...validatedData,

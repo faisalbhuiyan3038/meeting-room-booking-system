@@ -11,7 +11,7 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // Check if user is admin
+    // Ensure user is admin before proceeding
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },

@@ -17,7 +17,7 @@ const SyncUser = async () => {
 
     await prisma.user.upsert({
       where: {
-        id: userId, // Using Clerk's userId as our primary key
+        id: userId,
       },
       update: {
         email: user.emailAddresses[0].emailAddress,
@@ -25,14 +25,13 @@ const SyncUser = async () => {
         lastName: user.lastName ?? "",
       },
       create: {
-        id: userId, // Using Clerk's userId as our primary key
+        id: userId,
         email: user.emailAddresses[0].emailAddress,
         firstName: user.firstName ?? "",
         lastName: user.lastName ?? "",
       },
     });
 
-    // Redirect to home page after successful sync
     redirect("/");
   } catch (error) {
     console.error("Error syncing user:", error);

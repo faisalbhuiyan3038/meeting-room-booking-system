@@ -12,7 +12,6 @@ const roomUpdateSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-// Middleware to check if user is admin
 async function isAdmin() {
   const { userId } = await auth();
   if (!userId) return false;
@@ -90,7 +89,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Check if there are any active bookings for this room
+    // Try to get bookings first
     const activeBookings = await prisma.booking.findFirst({
       where: {
         roomId: params.roomId,

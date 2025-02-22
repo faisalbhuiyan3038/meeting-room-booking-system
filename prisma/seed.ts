@@ -1,32 +1,58 @@
 // prisma/seed.ts
 import { PrismaClient, UserRole, RoomStatus, BookingStatus } from '@prisma/client'
+import { clerkClient } from '@clerk/nextjs/server'
 const prisma = new PrismaClient()
 
-// ⚠️ IMPORTANT: First sign up through the app, then replace this with your Clerk user ID
-const YOUR_CLERK_USER_ID: string = 'user_2tCUCKsyQnHgaGMGO7er3sipNG6';
-
 async function main() {
-  if (YOUR_CLERK_USER_ID === 'user_REPLACE_THIS_WITH_YOUR_CLERK_ID') {
-    throw new Error('Please replace YOUR_CLERK_USER_ID with your actual Clerk user ID first!')
-  }
-
   console.log('Starting seed...')
 
-  // Clean the database (preserving users)
+  // Clean db to ensure no duplicate records
   console.log('Cleaning database...')
   await prisma.booking.deleteMany()
   await prisma.userFavorite.deleteMany()
   await prisma.room.deleteMany()
-  // await prisma.user.deleteMany() // Commented out to preserve existing users
+  await prisma.user.deleteMany()
 
-  // Update your user to admin role
-  console.log('Updating user role to admin...')
-  const user = await prisma.user.update({
-    where: { id: YOUR_CLERK_USER_ID },
-    data: { role: UserRole.ADMIN },
+  // Create users in Clerk
+  console.log('Creating users in Clerk...')
+  const clerk = await clerkClient()
+  const adminClerk = await clerk.users.createUser({
+    emailAddress: ['admin@example.com'],
+    password: 'Password123',
+    firstName: 'Admin',
+    lastName: 'User'
   })
 
-  // Create five rooms
+  const regularClerk = await clerk.users.createUser({
+    emailAddress: ['user@example.com'],
+    password: 'Password123',
+    firstName: 'Regular',
+    lastName: 'User'
+  })
+
+  // Create same users in Prisma and assign roles
+  console.log('Creating users in Prisma...')
+  const adminUser = await prisma.user.create({
+    data: {
+      id: adminClerk.id,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      role: UserRole.ADMIN,
+    },
+  })
+
+  const regularUser = await prisma.user.create({
+    data: {
+      id: regularClerk.id,
+      email: 'user@example.com',
+      firstName: 'Regular',
+      lastName: 'User',
+      role: UserRole.USER,
+    },
+  })
+
+  // Create ten rooms with random data
   console.log('Creating rooms...')
   const rooms = await Promise.all([
     prisma.room.create({
@@ -40,12 +66,7 @@ async function main() {
           "whiteboard",
           "tv",
           "airConditioning",
-          "conferenceTable",
-          "powerOutlets",
-          "deskPhoneSystem",
-          "naturalLight",
-          "windowCoverings",
-          "chairs"
+          "conferenceTable"
         ],
         status: RoomStatus.ACTIVE,
         description: 'Premium boardroom with state-of-the-art facilities',
@@ -62,13 +83,9 @@ async function main() {
           "videoConference",
           "wifi",
           "flipChart",
-          "powerOutlets",
-          "naturalLight",
-          "chairs",
-          "conferenceTable",
-          "heating"
+          "powerOutlets"
         ],
-        status: RoomStatus.ACTIVE,
+        status: RoomStatus.MAINTENANCE,
         description: 'Open space perfect for team brainstorming sessions',
       },
     }),
@@ -83,9 +100,7 @@ async function main() {
           "wifi",
           "powerOutlets",
           "airConditioning",
-          "conferenceTable",
-          "chairs",
-          "heating"
+          "conferenceTable"
         ],
         status: RoomStatus.ACTIVE,
         description: 'Small room ideal for focused discussions',
@@ -102,15 +117,9 @@ async function main() {
           "videoConference",
           "tv",
           "wifi",
-          "powerOutlets",
-          "airConditioning",
-          "flipChart",
-          "waterDispenser",
-          "handicapAccessible",
-          "chairs",
-          "conferenceTable"
+          "powerOutlets"
         ],
-        status: RoomStatus.ACTIVE,
+        status: RoomStatus.INACTIVE,
         description: 'Spacious room equipped for training sessions and workshops',
       },
     }),
@@ -126,47 +135,137 @@ async function main() {
           "wifi",
           "naturalLight",
           "flipChart",
-          "powerOutlets",
-          "chairs",
-          "conferenceTable",
-          "heating",
-          "windowCoverings"
+          "powerOutlets"
         ],
         status: RoomStatus.ACTIVE,
         description: 'Modern space designed for creative meetings and design thinking',
       },
     }),
+    prisma.room.create({
+      data: {
+        name: 'Innovation Lab',
+        capacity: 20,
+        imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c",
+        amenities: [
+          "whiteboard",
+          "projector",
+          "videoConference",
+          "wifi",
+          "powerOutlets",
+          "conferenceTable",
+          "airConditioning"
+        ],
+        status: RoomStatus.MAINTENANCE,
+        description: 'High-tech space for innovation and prototyping sessions',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Quiet Zone',
+        capacity: 6,
+        imageUrl: "https://images.unsplash.com/photo-1497366412874-3415097a27e7",
+        amenities: [
+          "wifi",
+          "powerOutlets",
+          "naturalLight",
+          "conferenceTable",
+          "airConditioning",
+          "chairs"
+        ],
+        status: RoomStatus.ACTIVE,
+        description: 'Peaceful space for concentrated work and small meetings',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Digital Hub',
+        capacity: 12,
+        imageUrl: "https://images.unsplash.com/photo-1497366754035-f200968a6e72",
+        amenities: [
+          "videoConference",
+          "tv",
+          "wifi",
+          "powerOutlets",
+          "whiteboard",
+          "conferenceTable"
+        ],
+        status: RoomStatus.INACTIVE,
+        description: 'Tech-enabled room for digital collaboration',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Strategy Room',
+        capacity: 8,
+        imageUrl: "https://images.unsplash.com/photo-1497366811353-6870744d04b2",
+        amenities: [
+          "whiteboard",
+          "tv",
+          "wifi",
+          "powerOutlets",
+          "conferenceTable",
+          "naturalLight"
+        ],
+        status: RoomStatus.ACTIVE,
+        description: 'Intimate setting for strategic planning sessions',
+      },
+    }),
+    prisma.room.create({
+      data: {
+        name: 'Presentation Hall',
+        capacity: 40,
+        imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c",
+        amenities: [
+          "projector",
+          "videoConference",
+          "wifi",
+          "powerOutlets",
+          "airConditioning",
+          "chairs",
+          "soundSystem"
+        ],
+        status: RoomStatus.ACTIVE,
+        description: 'Large space for presentations and company-wide meetings',
+      },
+    }),
   ])
 
-  // Create some bookings for your user
+  // Create a booking
   console.log('Creating bookings...')
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  tomorrow.setHours(10, 0, 0, 0) // 10 AM tomorrow
+  tomorrow.setHours(9, 30, 0, 0) // 9:30 AM tomorrow
 
   const tomorrowEnd = new Date(tomorrow)
-  tomorrowEnd.setHours(11, 0, 0, 0) // 11 AM tomorrow
+  tomorrowEnd.setHours(10, 0, 0, 0) // 10:00 AM tomorrow
 
   await prisma.booking.create({
     data: {
       roomId: rooms[0].id,
-      userId: user.id, // This will be your user
-      title: 'Team Meeting',
-      description: 'Weekly team sync',
+      userId: adminUser.id,
+      title: 'Strategy Meeting',
+      description: 'Quarterly planning session',
       startTime: tomorrow,
       endTime: tomorrowEnd,
       status: BookingStatus.CONFIRMED,
       attendees: 8,
-      purpose: 'Team Sync',
+      purpose: 'Planning',
     },
   })
 
-  // Add a favorite room for your user
+  // Add a favourite room
   console.log('Creating favorites...')
   await prisma.userFavorite.create({
     data: {
-      userId: user.id,
+      userId: adminUser.id,
       roomId: rooms[0].id,
+    },
+  })
+
+  await prisma.userFavorite.create({
+    data: {
+      userId: regularUser.id,
+      roomId: rooms[2].id,
     },
   })
 

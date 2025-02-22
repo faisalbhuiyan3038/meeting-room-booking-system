@@ -39,7 +39,6 @@ export async function POST(request: Request) {
     });
 
     if (existingFavorite) {
-      // If exists, delete it
       await prisma.userFavorite.delete({
         where: {
           userId_roomId: {
@@ -50,7 +49,6 @@ export async function POST(request: Request) {
       });
       return NextResponse.json({ action: 'removed' });
     } else {
-      // If doesn't exist, create it
       await prisma.userFavorite.create({
         data: {
           userId,

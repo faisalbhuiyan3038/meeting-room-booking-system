@@ -48,7 +48,6 @@ model Room {
   @@index([status])
 }
 
-// Join table for User-Room favorites
 model UserFavorite {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])
