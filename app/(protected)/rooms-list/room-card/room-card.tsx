@@ -141,6 +141,7 @@ const RoomCard = ({
         <div className="flex flex-wrap gap-2">
           {amenities.map((amenity) => {
             const Icon = amenityIcons[amenity];
+            if (!Icon) return null;
             return (
               <div
                 key={amenity}

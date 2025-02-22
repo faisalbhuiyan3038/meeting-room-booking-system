@@ -139,8 +139,8 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
   }
 
   return (
-    <>
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <Select
           defaultValue={searchParams.get('capacity') || "ALL"}
           onValueChange={handleCapacityChange}
@@ -204,8 +204,7 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
         ))}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="mt-6 flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-4">
         <Button
           variant="outline"
           onClick={handlePrevPage}
@@ -226,6 +225,6 @@ export function RoomFilters({ allRooms, userFavorites, onToggleFavorite }: RoomF
           Next <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-    </>
+    </div>
   );
 }
