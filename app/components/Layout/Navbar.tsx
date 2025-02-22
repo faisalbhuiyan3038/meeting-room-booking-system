@@ -44,6 +44,9 @@ export default function Navbar() {
               <a href="/my-bookings" className="text-muted-foreground hover:text-foreground">
                 My Bookings
               </a>
+              <a href="/recently-viewed" className="text-muted-foreground hover:text-foreground">
+                Recently Viewed
+              </a>
             </nav>
           </NavbarLeft>
           <NavbarRight className="flex items-center gap-4">
@@ -86,6 +89,12 @@ export default function Navbar() {
                     className="text-muted-foreground hover:text-foreground"
                   >
                     My Bookings
+                  </a>
+                  <a
+                    href="/recently-viewed"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Recently Viewed
                   </a>
                 </nav>
               </SheetContent>

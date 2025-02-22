@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 import { useRouter } from "next/navigation";
+import { addRecentlyViewedRoom } from "@/app/lib/recentlyViewed";
 
 interface RoomCardProps {
   id: string;
@@ -21,6 +22,7 @@ interface RoomCardProps {
   amenities: Amenity[];
   isFavorite?: boolean;
   onToggleFavorite?: (roomId: string) => void;
+  showCapacity?: boolean;
 }
 
 interface RoomWithFavorite extends Room {
@@ -43,6 +45,7 @@ const RoomCard = ({
   amenities,
   isFavorite = false,
   onToggleFavorite,
+  showCapacity = true,
 }: RoomCardProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -68,6 +71,12 @@ const RoomCard = ({
 
     // Call the actual toggle function
     onToggleFavorite(id);
+  };
+
+  const handleCardClick = () => {
+    // Add to recently viewed before navigation
+    addRecentlyViewedRoom({ id, name, imageUrl });
+    router.push(`/create-booking/${id}`);
   };
 
   return (
@@ -100,7 +109,7 @@ const RoomCard = ({
 
       <CardHeader
         className="p-4 hover:cursor-pointer hover:bg-gray-50"
-        onClick={() => router.push(`/create-booking/${id}`)}
+        onClick={handleCardClick}
       >
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">{name}</h3>
@@ -114,12 +123,14 @@ const RoomCard = ({
       </CardHeader>
 
       <CardContent className="p-4 pt-0">
-        <div className="flex items-center gap-2 mb-2">
-          <Users className="h-4 w-4 text-gray-500" />
-          <span className="text-sm text-gray-600">
-            Capacity: {capacity} people
-          </span>
-        </div>
+        {showCapacity && (
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="h-4 w-4 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              Capacity: {capacity} people
+            </span>
+          </div>
+        )}
 
         {description && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
